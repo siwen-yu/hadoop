@@ -55,6 +55,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.HandshakeSecretP
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.CipherOptionProto;
 import org.apache.hadoop.hdfs.protocolPB.PBHelperClient;
 import org.apache.hadoop.hdfs.security.token.block.InvalidBlockTokenException;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.SaslPropertiesResolver;
 import org.apache.hadoop.security.SaslRpcServer.QualityOfProtection;
 import org.slf4j.Logger;
@@ -62,7 +63,6 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
-import org.apache.hadoop.thirdparty.com.google.common.net.InetAddresses;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 
 /**
@@ -159,11 +159,8 @@ public final class DataTransferSaslUtil {
    * @return InetAddress from peer
    */
   public static InetAddress getPeerAddress(Peer peer) {
-    String remoteAddr = peer.getRemoteAddressString().split(":")[0];
-    int slashIdx = remoteAddr.indexOf('/');
-    return InetAddresses.forString(slashIdx != -1 ?
-        remoteAddr.substring(slashIdx + 1, remoteAddr.length()) :
-        remoteAddr);
+    String remoteAddr = peer.getRemoteAddressString();
+    return NetUtils.getInetAddressFromInetSocketAddressString(remoteAddr);
   }
 
   /**
@@ -206,26 +203,6 @@ public final class DataTransferSaslUtil {
     return resolver;
   }
 
-  private static <T> T readSaslMessage(InputStream in,
-      Function<DataTransferEncryptorMessageProto, ? extends T> handler) throws IOException {
-    DataTransferEncryptorMessageProto proto =
-        DataTransferEncryptorMessageProto.parseFrom(vintPrefixed(in));
-    switch (proto.getStatus()) {
-    case ERROR_UNKNOWN_KEY:
-      throw new InvalidEncryptionKeyException(proto.getMessage());
-    case ERROR:
-      if (proto.hasAccessTokenError() && proto.getAccessTokenError()) {
-        throw new InvalidBlockTokenException(proto.getMessage());
-      }
-      throw new IOException(proto.getMessage());
-    case SUCCESS:
-      return handler.apply(proto);
-    default:
-      throw new IOException(
-          "Unknown status: " + proto.getStatus() + ", message: " + proto.getMessage());
-    }
-  }
-
   /**
    * Reads a SASL negotiation message.
    *
@@ -234,7 +211,15 @@ public final class DataTransferSaslUtil {
    * @throws IOException for any error
    */
   public static byte[] readSaslMessage(InputStream in) throws IOException {
-    return readSaslMessage(in, proto -> proto.getPayload().toByteArray());
+    DataTransferEncryptorMessageProto proto =
+        DataTransferEncryptorMessageProto.parseFrom(vintPrefixed(in));
+    if (proto.getStatus() == DataTransferEncryptorStatus.ERROR_UNKNOWN_KEY) {
+      throw new InvalidEncryptionKeyException(proto.getMessage());
+    } else if (proto.getStatus() == DataTransferEncryptorStatus.ERROR) {
+      throw new IOException(proto.getMessage());
+    } else {
+      return proto.getPayload().toByteArray();
+    }
   }
 
   /**
@@ -247,7 +232,13 @@ public final class DataTransferSaslUtil {
    */
   public static byte[] readSaslMessageAndNegotiationCipherOptions(
       InputStream in, List<CipherOption> cipherOptions) throws IOException {
-    return readSaslMessage(in, proto -> {
+    DataTransferEncryptorMessageProto proto =
+        DataTransferEncryptorMessageProto.parseFrom(vintPrefixed(in));
+    if (proto.getStatus() == DataTransferEncryptorStatus.ERROR_UNKNOWN_KEY) {
+      throw new InvalidEncryptionKeyException(proto.getMessage());
+    } else if (proto.getStatus() == DataTransferEncryptorStatus.ERROR) {
+      throw new IOException(proto.getMessage());
+    } else {
       List<CipherOptionProto> optionProtos = proto.getCipherOptionList();
       if (optionProtos != null) {
         for (CipherOptionProto optionProto : optionProtos) {
@@ -255,7 +246,7 @@ public final class DataTransferSaslUtil {
         }
       }
       return proto.getPayload().toByteArray();
-    });
+    }
   }
 
   static class SaslMessageWithHandshake {
@@ -284,7 +275,13 @@ public final class DataTransferSaslUtil {
 
   public static SaslMessageWithHandshake readSaslMessageWithHandshakeSecret(
       InputStream in) throws IOException {
-    return readSaslMessage(in, proto -> {
+    DataTransferEncryptorMessageProto proto =
+        DataTransferEncryptorMessageProto.parseFrom(vintPrefixed(in));
+    if (proto.getStatus() == DataTransferEncryptorStatus.ERROR_UNKNOWN_KEY) {
+      throw new InvalidEncryptionKeyException(proto.getMessage());
+    } else if (proto.getStatus() == DataTransferEncryptorStatus.ERROR) {
+      throw new IOException(proto.getMessage());
+    } else {
       byte[] payload = proto.getPayload().toByteArray();
       byte[] secret = null;
       String bpid = null;
@@ -294,7 +291,7 @@ public final class DataTransferSaslUtil {
         bpid = handshakeSecret.getBpid();
       }
       return new SaslMessageWithHandshake(payload, secret, bpid);
-    });
+    }
   }
 
   /**
@@ -469,7 +466,13 @@ public final class DataTransferSaslUtil {
   public static SaslResponseWithNegotiatedCipherOption
       readSaslMessageAndNegotiatedCipherOption(InputStream in)
       throws IOException {
-    return readSaslMessage(in, proto -> {
+    DataTransferEncryptorMessageProto proto =
+        DataTransferEncryptorMessageProto.parseFrom(vintPrefixed(in));
+    if (proto.getStatus() == DataTransferEncryptorStatus.ERROR_UNKNOWN_KEY) {
+      throw new InvalidEncryptionKeyException(proto.getMessage());
+    } else if (proto.getStatus() == DataTransferEncryptorStatus.ERROR) {
+      throw new IOException(proto.getMessage());
+    } else {
       byte[] response = proto.getPayload().toByteArray();
       List<CipherOption> options = PBHelperClient.convertCipherOptionProtos(
           proto.getCipherOptionList());
@@ -478,7 +481,7 @@ public final class DataTransferSaslUtil {
         option = options.get(0);
       }
       return new SaslResponseWithNegotiatedCipherOption(response, option);
-    });
+    }
   }
 
   /**
@@ -554,13 +557,6 @@ public final class DataTransferSaslUtil {
       DataTransferEncryptorStatus status, byte[] payload, String message,
       HandshakeSecretProto handshakeSecret)
       throws IOException {
-    sendSaslMessage(out, status, payload, message, handshakeSecret, false);
-  }
-
-  public static void sendSaslMessage(OutputStream out,
-      DataTransferEncryptorStatus status, byte[] payload, String message,
-      HandshakeSecretProto handshakeSecret, boolean accessTokenError)
-      throws IOException {
     DataTransferEncryptorMessageProto.Builder builder =
         DataTransferEncryptorMessageProto.newBuilder();
 
@@ -573,9 +569,6 @@ public final class DataTransferSaslUtil {
     }
     if (handshakeSecret != null) {
       builder.setHandshakeSecret(handshakeSecret);
-    }
-    if (accessTokenError) {
-      builder.setAccessTokenError(true);
     }
 
     DataTransferEncryptorMessageProto proto = builder.build();
