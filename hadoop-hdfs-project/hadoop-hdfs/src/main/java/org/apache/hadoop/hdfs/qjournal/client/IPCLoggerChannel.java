@@ -53,6 +53,7 @@ import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.hdfs.server.protocol.RemoteEditLogManifest;
 import org.apache.hadoop.ipc.ProtobufRpcEngine2;
 import org.apache.hadoop.ipc.RPC;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.util.StopWatch;
 
@@ -600,7 +601,7 @@ public class IPCLoggerChannel implements AsyncLogger {
 
   @Override
   public String toString() {
-    return InetAddresses.toAddrString(addr.getAddress()) + ':' + addr.getPort();
+    return NetUtils.getHostPortString(addr);
   }
 
   @Override
@@ -635,7 +636,7 @@ public class IPCLoggerChannel implements AsyncLogger {
       URI uri = URI.create(ret.getFromURL());
       httpServerURL = getHttpServerURI(uri.getScheme(), uri.getPort());
     } else {
-      httpServerURL = getHttpServerURI("http", ret.getHttpPort());
+      httpServerURL = getHttpServerURI("http", ret.getHttpPort());;
     }
   }
 
@@ -644,7 +645,7 @@ public class IPCLoggerChannel implements AsyncLogger {
       URI uri = URI.create(ret.getFromURL());
       httpServerURL = getHttpServerURI(uri.getScheme(), uri.getPort());
     } else {
-      httpServerURL = getHttpServerURI("http", ret.getHttpPort());
+      httpServerURL = getHttpServerURI("http", ret.getHttpPort());;
     }
   }
 
@@ -668,4 +669,5 @@ public class IPCLoggerChannel implements AsyncLogger {
   private boolean hasHttpServerEndPoint() {
    return httpServerURL != null;
   }
+
 }

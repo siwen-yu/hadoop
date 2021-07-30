@@ -291,22 +291,22 @@ public class NamenodeWebHdfsMethods {
     
     HashSet<Node> excludes = new HashSet<Node>();
     if (excludeDatanodes != null) {
-      for (String host : StringUtils
+      for (String hostAndPort : StringUtils
           .getTrimmedStringCollection(excludeDatanodes)) {
-        int idx = host.indexOf(":");
+        HostAndPort hp = HostAndPort.fromString(hostAndPort);
         Node excludeNode = null;
-        if (idx != -1) {
-          excludeNode = bm.getDatanodeManager().getDatanodeByXferAddr(
-             host.substring(0, idx), Integer.parseInt(host.substring(idx + 1)));
+        if (hp.hasPort()) {
+          excludeNode = bm.getDatanodeManager()
+              .getDatanodeByXferAddr(hp.getHost(), hp.getPort());
         } else {
-          excludeNode = bm.getDatanodeManager().getDatanodeByHost(host);
+          excludeNode = bm.getDatanodeManager().getDatanodeByHost(hostAndPort);
         }
 
         if (excludeNode != null) {
           excludes.add(excludeNode);
         } else {
           LOG.debug("DataNode {} was requested to be excluded, "
-                + "but it was not found.", host);
+              + "but it was not found.", hostAndPort);
         }
       }
     }
