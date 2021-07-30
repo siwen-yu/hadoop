@@ -590,8 +590,10 @@ public class Client implements AutoCloseable {
       InetSocketAddress currentAddr = NetUtils.createSocketAddrForHost(
                                server.getHostName(), server.getPort());
 
-      if (!currentAddr.isUnresolved() && !server.equals(currentAddr)) {
-        LOG.warn("Address change detected. Old: {} New: {}", server, currentAddr);
+        if (!currentAddr.isUnresolved() && !server.equals(currentAddr)) {
+            LOG.warn("Address change detected. Old: " + NetUtils
+                    .getSocketAddressString(server) + " New: " + NetUtils
+                    .getSocketAddressString(currentAddr));
         server = currentAddr;
         // Update the remote address so that reconnections are with the updated address.
         // This avoids thrashing.
@@ -1779,7 +1781,7 @@ public class Client implements AutoCloseable {
     RetryPolicy getRetryPolicy() {
       return connectionRetryPolicy;
     }
-    
+
     @VisibleForTesting
     String getSaslQop() {
       return saslQop;
@@ -1860,7 +1862,7 @@ public class Client implements AutoCloseable {
     
     @Override
     public String toString() {
-      return address.toString();
+      return NetUtils.getSocketAddressString(address);
     }
   }  
 
@@ -1931,12 +1933,10 @@ public class Client implements AutoCloseable {
         }
       }
       if (length <= 0) {
-        throw new RpcException(String.format("RPC response has " +
-            "invalid length of %d", length));
+        throw new RpcException("RPC response has invalid length");
       }
       if (maxResponseLength > 0 && length > maxResponseLength) {
-        throw new RpcException(String.format("RPC response has a " +
-            "length of %d exceeds maximum data length", length));
+        throw new RpcException("RPC response exceeds maximum data length");
       }
       ByteBuffer bb = ByteBuffer.allocate(length);
       in.readFully(bb.array());

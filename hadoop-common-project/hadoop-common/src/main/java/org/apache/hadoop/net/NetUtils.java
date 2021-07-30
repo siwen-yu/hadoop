@@ -62,8 +62,8 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Preconditions;
 
-import com.google.common.net.HostAndPort;
-import com.google.common.net.InetAddresses;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.InetAddresses;
 import org.apache.http.conn.util.InetAddressUtils;
 import java.net.*;
 
