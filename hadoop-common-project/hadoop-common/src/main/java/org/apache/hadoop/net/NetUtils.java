@@ -60,7 +60,6 @@ import org.apache.hadoop.ipc.Server;
 import org.apache.hadoop.ipc.VersionedProtocol;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.util.Preconditions;
 
 import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 import org.apache.hadoop.thirdparty.com.google.common.net.InetAddresses;
@@ -773,7 +772,7 @@ public class NetUtils {
         if (InetAddressUtils.isIPv6Address(hostName)) {
             return "[" + hostName + "]:" + addr.getPort();
         }
-        return hostName + ":" + addr.getPort();
+    return hostName + ":" + addr.getPort();
     }
     /**
      * Compose a "ip:port" string from the InetSocketAddress.
