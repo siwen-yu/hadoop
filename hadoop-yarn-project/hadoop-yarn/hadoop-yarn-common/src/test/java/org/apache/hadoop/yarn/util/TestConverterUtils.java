@@ -102,6 +102,16 @@ public class TestConverterUtils {
     nid = ConverterUtils.toNodeIdWithDefaultPort("node");
     assertThat(nid.getPort()).isEqualTo(0);
     assertThat(nid.getHost()).isEqualTo("node");
+
+    nid = ConverterUtils
+        .toNodeIdWithDefaultPort("[2401:db00:20:a01e:face:0:5:0]:10");
+    assertEquals(nid.getPort(), 10);
+    assertEquals(nid.getHost(), "[2401:db00:20:a01e:face:0:5:0]");
+
+    nid = ConverterUtils
+        .toNodeIdWithDefaultPort("[2401:db00:20:a01e:face:0:5:0]");
+    assertEquals(nid.getPort(), 0);
+    assertEquals(nid.getHost(), "[2401:db00:20:a01e:face:0:5:0]");
   }
 
   @Test

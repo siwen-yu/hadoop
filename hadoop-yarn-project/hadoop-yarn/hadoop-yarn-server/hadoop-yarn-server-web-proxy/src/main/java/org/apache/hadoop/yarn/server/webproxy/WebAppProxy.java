@@ -21,6 +21,7 @@ package org.apache.hadoop.yarn.server.webproxy;
 import java.io.IOException;
 import java.net.URI;
 
+import com.google.common.net.HostAndPort;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.security.authorize.AccessControlList;
@@ -58,7 +59,8 @@ public class WebAppProxy extends AbstractService {
   
   @Override
   protected void serviceInit(Configuration conf) throws Exception {
-    String auth =  conf.get(CommonConfigurationKeys.HADOOP_SECURITY_AUTHENTICATION);
+    String auth =  conf.get(
+        CommonConfigurationKeys.HADOOP_SECURITY_AUTHENTICATION);
     if (auth == null || "simple".equals(auth)) {
       isSecurityEnabled = false;
     } else if ("kerberos".equals(auth)) {
@@ -69,8 +71,7 @@ public class WebAppProxy extends AbstractService {
           " of " + auth);
     }
     String proxy = WebAppUtils.getProxyHostAndPort(conf);
-    String[] proxyParts = proxy.split(":");
-    proxyHost = proxyParts[0];
+    proxyHost = HostAndPort.fromString(proxy).getHost();
 
     if (HAUtil.isFederationEnabled(conf)) {
       fetcher = new FedAppReportFetcher(conf);

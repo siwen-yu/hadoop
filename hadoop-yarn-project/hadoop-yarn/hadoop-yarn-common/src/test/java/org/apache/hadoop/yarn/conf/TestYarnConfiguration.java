@@ -18,6 +18,13 @@
 
 package org.apache.hadoop.yarn.conf;
 
+import com.google.common.net.HostAndPort;
+import org.apache.hadoop.net.NetUtils;
+import org.junit.Assert;
+
+import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
+import org.junit.Test;
+
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -115,8 +122,7 @@ public class TestYarnConfiguration {
         YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT);
-    assertEquals(
-        new InetSocketAddress(
+    assertEquals(new InetSocketAddress(
             YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS.split(":")[0],
             YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT),
         resourceTrackerAddress);
@@ -128,9 +134,7 @@ public class TestYarnConfiguration {
         YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT);
-    assertEquals(
-        new InetSocketAddress(
-            "10.0.0.1",
+    assertEquals(new InetSocketAddress("10.0.0.1",
             YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT),
         resourceTrackerAddress);
 
@@ -147,6 +151,20 @@ public class TestYarnConfiguration {
             5001),
         resourceTrackerAddress);
 
+    // IPv6 address and socket
+    conf.set(YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS,
+        "[2401:db00:20:a01e:face:0:5:0]:5001");
+    resourceTrackerAddress = conf.getSocketAddr(
+        YarnConfiguration.RM_BIND_HOST,
+        YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS,
+        YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
+        YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT);
+    assertEquals(
+        new InetSocketAddress(
+            "2401:db00:20:a01e:face:0:5:0",
+            5001),
+        resourceTrackerAddress);
+
     //bind host only
     conf = new YarnConfiguration();
     conf.set(YarnConfiguration.RM_BIND_HOST, "10.0.0.3");
@@ -155,9 +173,7 @@ public class TestYarnConfiguration {
         YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT);
-    assertEquals(
-        new InetSocketAddress(
-            "10.0.0.3",
+    assertEquals(new InetSocketAddress("10.0.0.3",
             YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT),
         resourceTrackerAddress);
 
@@ -169,9 +185,7 @@ public class TestYarnConfiguration {
         YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT);
-    assertEquals(
-        new InetSocketAddress(
-            "0.0.0.0",
+    assertEquals(new InetSocketAddress("0.0.0.0",
             YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT),
         resourceTrackerAddress);
 
@@ -183,10 +197,7 @@ public class TestYarnConfiguration {
         YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_PORT);
-    assertEquals(
-        new InetSocketAddress(
-            "0.0.0.0",
-            5003),
+    assertEquals(new InetSocketAddress("0.0.0.0", 5003),
         resourceTrackerAddress);
 
   }
@@ -200,9 +211,8 @@ public class TestYarnConfiguration {
     //no override, old behavior.  Won't work on a host named "yo.yo.yo"
     conf = new YarnConfiguration();
     conf.set(YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS, "yo.yo.yo");
-    serverAddress = new InetSocketAddress(
-        YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS.split(":")[0],
-        Integer.parseInt(YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS.split(":")[1]));
+    serverAddress = newInetSocketAddressFromHostPort(
+        YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS);
 
     resourceTrackerConnectAddress = conf.updateConnectAddr(
         YarnConfiguration.RM_BIND_HOST,
@@ -210,15 +220,15 @@ public class TestYarnConfiguration {
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
         serverAddress);
 
-    assertFalse(resourceTrackerConnectAddress.toString().startsWith("yo.yo.yo"));
+    assertFalse(NetUtils.getSocketAddressString(resourceTrackerConnectAddress)
+        .startsWith("yo.yo.yo"));
 
     //cause override with address
     conf = new YarnConfiguration();
     conf.set(YarnConfiguration.RM_RESOURCE_TRACKER_ADDRESS, "yo.yo.yo");
     conf.set(YarnConfiguration.RM_BIND_HOST, "0.0.0.0");
-    serverAddress = new InetSocketAddress(
-        YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS.split(":")[0],
-        Integer.parseInt(YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS.split(":")[1]));
+    serverAddress = newInetSocketAddressFromHostPort(
+        YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS);
 
     resourceTrackerConnectAddress = conf.updateConnectAddr(
         YarnConfiguration.RM_BIND_HOST,
@@ -226,7 +236,8 @@ public class TestYarnConfiguration {
         YarnConfiguration.DEFAULT_RM_RESOURCE_TRACKER_ADDRESS,
         serverAddress);
 
-    assertTrue(resourceTrackerConnectAddress.toString().startsWith("yo.yo.yo"));
+    assertTrue(NetUtils.getSocketAddressString(resourceTrackerConnectAddress)
+        .startsWith("yo.yo.yo"));
 
     //tests updateConnectAddr won't add suffix to NM service address configurations
     conf = new YarnConfiguration();
@@ -235,9 +246,8 @@ public class TestYarnConfiguration {
     conf.setBoolean(YarnConfiguration.RM_HA_ENABLED, true);
     conf.set(YarnConfiguration.RM_HA_ID, "rm1");
 
-    serverAddress = new InetSocketAddress(
-        YarnConfiguration.DEFAULT_NM_LOCALIZER_ADDRESS.split(":")[0],
-        Integer.parseInt(YarnConfiguration.DEFAULT_NM_LOCALIZER_ADDRESS.split(":")[1]));
+    serverAddress = newInetSocketAddressFromHostPort(
+        YarnConfiguration.DEFAULT_NM_LOCALIZER_ADDRESS);
 
     InetSocketAddress localizerAddress = conf.updateConnectAddr(
         YarnConfiguration.NM_BIND_HOST,
@@ -245,9 +255,16 @@ public class TestYarnConfiguration {
         YarnConfiguration.DEFAULT_NM_LOCALIZER_ADDRESS,
         serverAddress);
 
-    assertTrue(localizerAddress.toString().startsWith("yo.yo.yo"));
+    assertTrue(NetUtils.getSocketAddressString(localizerAddress)
+        .startsWith("yo.yo.yo"));
     assertNull(conf.get(
         HAUtil.addSuffix(YarnConfiguration.NM_LOCALIZER_ADDRESS, "rm1")));
+  }
+
+  private InetSocketAddress newInetSocketAddressFromHostPort(
+      String hostPort) {
+    HostAndPort hp = HostAndPort.fromString(hostPort);
+    return new InetSocketAddress(hp.getHost(), hp.getPort());
   }
 
   @Test
