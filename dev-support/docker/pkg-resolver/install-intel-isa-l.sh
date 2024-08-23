@@ -40,11 +40,15 @@ fi
 
 if [ "$version_to_install" == "2.29.0" ]; then
   # hadolint ignore=DL3003,DL3008
-  mkdir -p /opt/isa-l-src &&
+  mkdir -p /opt/isa-l-src
+  if [ -e "pkg-resolver/packages/isa-l-2.29.0.tar.gz" ]; then
+    tar xzf pkg-resolver/packages/isa-l-2.29.0.tar.gz --strip-components 1 -C /opt/isa-l-src
+  else
     curl -L -s -S \
       https://github.com/intel/isa-l/archive/v2.29.0.tar.gz \
       -o /opt/isa-l.tar.gz &&
-    tar xzf /opt/isa-l.tar.gz --strip-components 1 -C /opt/isa-l-src &&
+    tar xzf /opt/isa-l.tar.gz --strip-components 1 -C /opt/isa-l-src
+  fi
     cd /opt/isa-l-src &&
     ./autogen.sh &&
     ./configure &&

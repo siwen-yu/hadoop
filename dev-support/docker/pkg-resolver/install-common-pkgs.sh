@@ -19,4 +19,4 @@
 ######
 # Install pylint and python-dateutil
 ######
-pip3 install pylint==2.6.0 python-dateutil==2.8.1
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple some-package pylint==2.6.0 python-dateutil==2.8.1

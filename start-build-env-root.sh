@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# 注意，只适用于非root用户，root用户不可使用
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -25,7 +23,7 @@ DOCKER_DIR=dev-support/docker
 DOCKER_FILE="${DOCKER_DIR}/Dockerfile"
 
 CPU_ARCH=$(echo "$MACHTYPE" | cut -d- -f1)
-if [[ "$CPU_ARCH" = "aarch64" || "$CPU_ARCH" = "arm64" ]]; then
+if [ "$CPU_ARCH" = "aarch64" ]; then
   DOCKER_FILE="${DOCKER_DIR}/Dockerfile_aarch64"
 fi
 
@@ -74,9 +72,6 @@ DOCKER_HOME_DIR=${DOCKER_HOME_DIR:-/home/${USER_NAME}}
 docker build -t "hadoop-build-${USER_ID}" - <<UserSpecificDocker
 FROM hadoop-build
 RUN rm -f /var/log/faillog /var/log/lastlog
-# 可选
-RUN groupadd --non-unique -g ${GROUP_ID} ${USER_NAME}
-RUN useradd -g ${GROUP_ID} -u ${USER_ID} -k /root -m ${USER_NAME} -d "${DOCKER_HOME_DIR}"
 # 替换默认镜像
 RUN sed -i '/<mirrors>/a\
     <mirror>\n\
@@ -101,7 +96,7 @@ DOCKER_INTERACTIVE_RUN=${DOCKER_INTERACTIVE_RUN-"-i -t"}
 docker run --rm=true $DOCKER_INTERACTIVE_RUN \
   -v "${PWD}:${DOCKER_HOME_DIR}/hadoop${V_OPTS:-}" \
   -w "${DOCKER_HOME_DIR}/hadoop" \
-  -v "${HOME}/.m2:${DOCKER_HOME_DIR}/.m2${V_OPTS:-}" \
-  -v "${HOME}/.gnupg:${DOCKER_HOME_DIR}/.gnupg${V_OPTS:-}" \
+  -v "${HOME}/.m2:/root/.m2${V_OPTS:-}" \
+  -v "${HOME}/.gnupg:/root/.gnupg${V_OPTS:-}" \
   -u "${USER_ID}" \
   "hadoop-build-${USER_ID}" "$@"

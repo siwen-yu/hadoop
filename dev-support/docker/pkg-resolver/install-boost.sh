@@ -40,9 +40,13 @@ fi
 
 if [ "$version_to_install" == "1.72.0" ]; then
   # hadolint ignore=DL3003
-  mkdir -p /opt/boost-library &&
-    curl -L https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.bz2/download >boost_1_72_0.tar.bz2 &&
-    mv boost_1_72_0.tar.bz2 /opt/boost-library &&
+  mkdir -p /opt/boost-library
+  if [ -e "pkg-resolver/packages/boost_1_72_0.tar.bz2" ]; then
+    mv pkg-resolver/packages/boost_1_72_0.tar.bz2 /opt/boost-library
+  else
+    curl -L https://mirror4.lzu.edu.cn/buildroot/boost/boost_1_72_0.tar.bz2 >boost_1_72_0.tar.bz2 &&
+    mv boost_1_72_0.tar.bz2 /opt/boost-library
+  fi
     cd /opt/boost-library &&
     tar --bzip2 -xf boost_1_72_0.tar.bz2 &&
     cd /opt/boost-library/boost_1_72_0 &&

@@ -40,11 +40,15 @@ fi
 
 if [ "$version_to_install" == "3.7.1" ]; then
   # hadolint ignore=DL3003
-  mkdir -p /opt/protobuf-src &&
+  mkdir -p /opt/protobuf-src
+  if [ -e "pkg-resolver/packages/protobuf-java-3.7.1.tar.gz" ]; then
+    tar xzf pkg-resolver/packages/protobuf-java-3.7.1.tar.gz --strip-components 1 -C /opt/protobuf-src
+  else
     curl -L -s -S \
       https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-java-3.7.1.tar.gz \
       -o /opt/protobuf.tar.gz &&
-    tar xzf /opt/protobuf.tar.gz --strip-components 1 -C /opt/protobuf-src &&
+    tar xzf /opt/protobuf.tar.gz --strip-components 1 -C /opt/protobuf-src
+  fi
     cd /opt/protobuf-src &&
     ./configure --prefix=/opt/protobuf &&
     make "-j$(nproc)" &&

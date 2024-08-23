@@ -43,7 +43,12 @@ RUN chmod a+x pkg-resolver/*.sh pkg-resolver/*.py \
 # Install packages from apt
 ######
 # hadolint ignore=DL3008,SC2046
-RUN apt-get -q update \
+RUN sed -i -e 's@//ports.ubuntu.com/\? @//ports.ubuntu.com/ubuntu-ports @g' \
+            -e 's@//ports.ubuntu.com@//mirrors.ustc.edu.cn@g' \
+	    -e 's@//archive.ubuntu.com@//mirrors.ustc.edu.cn@g' \
+            /etc/apt/sources.list \
+    && apt-get -q clean \
+    && apt-get -q update \
     && apt-get -q install -y --no-install-recommends python3 \
     && apt-get -q install -y --no-install-recommends $(pkg-resolver/resolve.py ubuntu:focal) \
     && apt-get clean \

@@ -39,10 +39,14 @@ if [ "$version_to_install" != "4.2.2" ]; then
 fi
 
 if [ "$version_to_install" == "4.2.2" ]; then
-  mkdir -p /opt/spotbugs &&
+  mkdir -p /opt/spotbugs
+  if [ -e "pkg-resolver/packages/spotbugs-4.2.2.tgz" ]; then
+    tar xzf pkg-resolver/packages/spotbugs-4.2.2.tgz --strip-components 1 -C /opt/spotbugs
+  else
     curl -L -s -S https://github.com/spotbugs/spotbugs/releases/download/4.2.2/spotbugs-4.2.2.tgz \
       -o /opt/spotbugs.tgz &&
-    tar xzf /opt/spotbugs.tgz --strip-components 1 -C /opt/spotbugs &&
+    tar xzf /opt/spotbugs.tgz --strip-components 1 -C /opt/spotbugs
+  fi
     chmod +x /opt/spotbugs/bin/*
 else
   echo "ERROR: Don't know how to install version $version_to_install"
