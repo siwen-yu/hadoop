@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.yarn.conf;
 
-import com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 import org.apache.hadoop.net.NetUtils;
 import org.junit.Assert;
 
 import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
-import org.junit.Test;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;

@@ -36,7 +36,7 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.factories.RecordFactory;
-import com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 
 /**
  * This class contains a set of utilities which help converting data structures

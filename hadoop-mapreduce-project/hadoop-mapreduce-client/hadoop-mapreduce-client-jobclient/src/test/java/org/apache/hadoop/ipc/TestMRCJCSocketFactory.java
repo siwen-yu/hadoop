@@ -37,7 +37,7 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 
 /**
  * This class checks that RPCs can use specialized socket factories.

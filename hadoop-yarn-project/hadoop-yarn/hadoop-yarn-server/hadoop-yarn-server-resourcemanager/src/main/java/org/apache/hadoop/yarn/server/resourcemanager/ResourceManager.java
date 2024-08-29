@@ -141,7 +141,7 @@ import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
 import org.apache.zookeeper.server.auth.DigestAuthenticationProvider;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-import com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;

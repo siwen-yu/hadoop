@@ -18,8 +18,6 @@
 package org.apache.hadoop.hdfs.util;
 
 import org.apache.hadoop.thirdparty.com.google.common.net.InetAddresses;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hdfs.net.Peer;
 import org.apache.hadoop.hdfs.protocol.DatanodeID;
 import org.apache.hadoop.hdfs.protocol.datatransfer.sasl.DataTransferSaslUtil;
@@ -62,9 +60,6 @@ public class TestIPv6FormatCompatibility {
       InetAddresses.forString(IPV6_SAMPLE_ADDRESS);
   private static final String IPV4_LOOPBACK_STRING =
       IPV4LOOPBACK.getHostAddress();
-
-  private static final Log LOG =
-      LogFactory.getLog(TestIPv6FormatCompatibility.class);
 
   // HDFS-8078 : note that we're expecting URI-style
   // (see Javadoc for java.net.URI or rfc2732)

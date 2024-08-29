@@ -21,7 +21,7 @@ package org.apache.hadoop.yarn.server.webproxy;
 import java.io.IOException;
 import java.net.URI;
 
-import com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.security.authorize.AccessControlList;

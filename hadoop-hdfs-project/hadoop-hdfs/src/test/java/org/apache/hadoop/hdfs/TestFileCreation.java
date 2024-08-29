@@ -94,14 +94,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This class tests various cases during file creation.
  */
 public class TestFileCreation {
-  public static final Log LOG = LogFactory.getLog(TestFileCreation.class);
   static final String DIR = "/" + TestFileCreation.class.getSimpleName() + "/";
 
   {
@@ -130,7 +127,7 @@ public class TestFileCreation {
   // creates a file but does not close it
   public static FSDataOutputStream createFile(FileSystem fileSys, Path name, int repl)
     throws IOException {
-    LOG.info("createFile: Created " + name + " with " + repl + " replica.");
+    System.out.println("createFile: Created " + name + " with " + repl + " replica.");
     FSDataOutputStream stm = fileSys.create(name, true, fileSys.getConf()
         .getInt(CommonConfigurationKeys.IO_FILE_BUFFER_SIZE_KEY, 4096),
         (short) repl, blockSize);
@@ -353,8 +350,8 @@ public class TestFileCreation {
       // check that / exists
       //
       Path path = new Path("/");
-      LOG.info("Path : \"" + path.toString() + "\"");
-      LOG.info(fs.getFileStatus(path).isDirectory());
+      System.out.println("Path : \"" + path.toString() + "\"");
+      System.out.println(fs.getFileStatus(path).isDirectory());
       assertTrue("/ should be a directory",
                  fs.getFileStatus(path).isDirectory());
 
@@ -363,8 +360,8 @@ public class TestFileCreation {
       //
       Path dir1 = new Path("/test_dir");
       fs.mkdirs(dir1);
-      LOG.info("createFile: Creating " + dir1.getName()
-          + " for overwrite of existing directory.");
+      System.out.println("createFile: Creating " + dir1.getName() +
+        " for overwrite of existing directory.");
       try {
         fs.create(dir1, true); // Create path, overwrite=true
         fs.close();
@@ -386,7 +383,7 @@ public class TestFileCreation {
       // verify that file exists in FS namespace
       assertTrue(file1 + " should be a file",
                  fs.getFileStatus(file1).isFile());
-      LOG.info("Path : \"" + file1 + "\"");
+      System.out.println("Path : \"" + file1 + "\"");
 
       // write to file
       writeFile(stm);
@@ -441,7 +438,7 @@ public class TestFileCreation {
       FSDataOutputStream stm1 = createFile(fs, file1, 1);
       FSDataOutputStream stm2 = createFile(fs, file2, 1);
       FSDataOutputStream stm3 = createFile(localfs, file3, 1);
-      LOG.info("DeleteOnExit: Created files.");
+      System.out.println("DeleteOnExit: Created files.");
 
       // write to files and close. Purposely, do not close file2.
       writeFile(stm1);
@@ -472,7 +469,7 @@ public class TestFileCreation {
                  !fs.exists(file2));
       assertTrue(file3 + " still exists inspite of deletOnExit set.",
                  !localfs.exists(file3));
-      LOG.info("DeleteOnExit successful.");
+      System.out.println("DeleteOnExit successful.");
 
     } finally {
       IOUtils.closeStream(fs);
@@ -568,7 +565,7 @@ public class TestFileCreation {
       // verify that file exists in FS namespace
       assertTrue(file1 + " should be a file", 
                  fs.getFileStatus(file1).isFile());
-      LOG.info("Path : \"" + file1 + "\"");
+      System.out.println("Path : \"" + file1 + "\"");
 
       // kill the datanode
       cluster.shutdownDataNodes();
@@ -580,7 +577,7 @@ public class TestFileCreation {
         if (info.length == 0) {
           break;
         }
-        LOG.info("testFileCreationError1: waiting for datanode " +
+        System.out.println("testFileCreationError1: waiting for datanode " +
                            " to die.");
         try {
           Thread.sleep(1000);
@@ -602,7 +599,7 @@ public class TestFileCreation {
       // bad block allocations were cleaned up earlier.
       LocatedBlocks locations = client.getNamenode().getBlockLocations(
                                   file1.toString(), 0, Long.MAX_VALUE);
-      LOG.info("locations = " + locations.locatedBlockCount());
+      System.out.println("locations = " + locations.locatedBlockCount());
       assertTrue("Error blocks were not cleaned up",
                  locations.locatedBlockCount() == 0);
     } finally {
@@ -618,7 +615,7 @@ public class TestFileCreation {
   @Test
   public void testFileCreationError2() throws IOException {
     long leasePeriod = 1000;
-    LOG.info("testFileCreationError2 start");
+    System.out.println("testFileCreationError2 start");
     Configuration conf = new HdfsConfiguration();
     conf.setInt(DFS_NAMENODE_HEARTBEAT_RECHECK_INTERVAL_KEY, 1000);
     conf.setInt(DFS_HEARTBEAT_INTERVAL_KEY, 1);
@@ -637,24 +634,24 @@ public class TestFileCreation {
       //
       Path file1 = new Path("/filestatus.dat");
       createFile(dfs, file1, 1);
-      LOG.info("testFileCreationError2: "
+      System.out.println("testFileCreationError2: "
                          + "Created file filestatus.dat with one replicas.");
 
       LocatedBlocks locations = client.getNamenode().getBlockLocations(
                                   file1.toString(), 0, Long.MAX_VALUE);
-      LOG.info("testFileCreationError2: "
+      System.out.println("testFileCreationError2: "
           + "The file has " + locations.locatedBlockCount() + " blocks.");
 
       // add one block to the file
       LocatedBlock location = client.getNamenode().addBlock(file1.toString(),
           client.clientName, null, null, HdfsConstants.GRANDFATHER_INODE_ID, null, null);
-      LOG.info("testFileCreationError2: "
+      System.out.println("testFileCreationError2: "
           + "Added block " + location.getBlock());
 
       locations = client.getNamenode().getBlockLocations(file1.toString(), 
                                                     0, Long.MAX_VALUE);
       int count = locations.locatedBlockCount();
-      LOG.info("testFileCreationError2: "
+      System.out.println("testFileCreationError2: "
           + "The file now has " + count + " blocks.");
       
       // set the soft and hard limit to be 1 second so that the
@@ -670,10 +667,10 @@ public class TestFileCreation {
       // verify that the last block was synchronized.
       locations = client.getNamenode().getBlockLocations(file1.toString(), 
                                                     0, Long.MAX_VALUE);
-      LOG.info("testFileCreationError2: "
+      System.out.println("testFileCreationError2: "
           + "locations = " + locations.locatedBlockCount());
       assertEquals(0, locations.locatedBlockCount());
-      LOG.info("testFileCreationError2 successful");
+      System.out.println("testFileCreationError2 successful");
     } finally {
       IOUtils.closeStream(dfs);
       cluster.shutdown();
@@ -683,7 +680,7 @@ public class TestFileCreation {
   /** test addBlock(..) when replication<min and excludeNodes==null. */
   @Test
   public void testFileCreationError3() throws IOException {
-    LOG.info("testFileCreationError3 start");
+    System.out.println("testFileCreationError3 start");
     Configuration conf = new HdfsConfiguration();
     // create cluster
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
@@ -704,7 +701,7 @@ public class TestFileCreation {
         FileSystem.LOG.info("GOOD!", ioe);
       }
 
-      LOG.info("testFileCreationError3 successful");
+      System.out.println("testFileCreationError3 successful");
     } finally {
       IOUtils.closeStream(dfs);
       cluster.shutdown();
@@ -737,7 +734,7 @@ public class TestFileCreation {
       // create a new file.
       Path file1 = new Path("/filestatus.dat");
       HdfsDataOutputStream stm = create(fs, file1, 1);
-      LOG.info("testFileCreationNamenodeRestart: "
+      System.out.println("testFileCreationNamenodeRestart: "
                          + "Created file " + file1);
       assertEquals(file1 + " should be replicated to 1 datanode.", 1,
           stm.getCurrentBlockReplication());
@@ -751,7 +748,7 @@ public class TestFileCreation {
       // rename file wile keeping it open.
       Path fileRenamed = new Path("/filestatusRenamed.dat");
       fs.rename(file1, fileRenamed);
-      LOG.info("testFileCreationNamenodeRestart: "
+      System.out.println("testFileCreationNamenodeRestart: "
                          + "Renamed file " + file1 + " to " +
                          fileRenamed);
       file1 = fileRenamed;
@@ -760,7 +757,7 @@ public class TestFileCreation {
       //
       Path file2 = new Path("/filestatus2.dat");
       FSDataOutputStream stm2 = createFile(fs, file2, 1);
-      LOG.info("testFileCreationNamenodeRestart: "
+      System.out.println("testFileCreationNamenodeRestart: "
                          + "Created file " + file2);
 
       // create yet another new file with full path name. 
@@ -768,21 +765,21 @@ public class TestFileCreation {
       //
       Path file3 = new Path("/user/home/fullpath.dat");
       FSDataOutputStream stm3 = createFile(fs, file3, 1);
-      LOG.info("testFileCreationNamenodeRestart: "
+      System.out.println("testFileCreationNamenodeRestart: "
                          + "Created file " + file3);
       Path file4 = new Path("/user/home/fullpath4.dat");
       FSDataOutputStream stm4 = createFile(fs, file4, 1);
-      LOG.info("testFileCreationNamenodeRestart: "
+      System.out.println("testFileCreationNamenodeRestart: "
                          + "Created file " + file4);
 
       fs.mkdirs(new Path("/bin"));
       fs.rename(new Path("/user/home"), new Path("/bin"));
       Path file3new = new Path("/bin/home/fullpath.dat");
-      LOG.info("testFileCreationNamenodeRestart: "
+      System.out.println("testFileCreationNamenodeRestart: "
                          + "Renamed file " + file3 + " to " +
                          file3new);
       Path file4new = new Path("/bin/home/fullpath4.dat");
-      LOG.info("testFileCreationNamenodeRestart: "
+      System.out.println("testFileCreationNamenodeRestart: "
                          + "Renamed file " + file4 + " to " +
                          file4new);
 
@@ -842,14 +839,14 @@ public class TestFileCreation {
       DFSClient client = fs.dfs;
       LocatedBlocks locations = client.getNamenode().getBlockLocations(
                                   file1.toString(), 0, Long.MAX_VALUE);
-      LOG.info("locations = " + locations.locatedBlockCount());
+      System.out.println("locations = " + locations.locatedBlockCount());
       assertTrue("Error blocks were not cleaned up for file " + file1,
                  locations.locatedBlockCount() == 3);
 
       // verify filestatus2.dat
       locations = client.getNamenode().getBlockLocations(
                                   file2.toString(), 0, Long.MAX_VALUE);
-      LOG.info("locations = " + locations.locatedBlockCount());
+      System.out.println("locations = " + locations.locatedBlockCount());
       assertTrue("Error blocks were not cleaned up for file " + file2,
                  locations.locatedBlockCount() == 1);
     } finally {
@@ -864,7 +861,7 @@ public class TestFileCreation {
   @Test
   public void testDFSClientDeath() throws IOException, InterruptedException {
     Configuration conf = new HdfsConfiguration();
-    LOG.info("Testing adbornal client death.");
+    System.out.println("Testing adbornal client death.");
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
@@ -878,7 +875,7 @@ public class TestFileCreation {
       //
       Path file1 = new Path("/clienttest.dat");
       FSDataOutputStream stm = createFile(fs, file1, 1);
-      LOG.info("Created file clienttest.dat");
+      System.out.println("Created file clienttest.dat");
 
       // write to file
       writeFile(stm);
@@ -975,7 +972,7 @@ public class TestFileCreation {
   static IOException createNonRecursive(FileSystem fs, Path name,
       int repl, EnumSet<CreateFlag> flag) throws IOException {
     try {
-      LOG.info("createNonRecursive: Attempting to create " + name +
+      System.out.println("createNonRecursive: Attempting to create " + name +
           " with " + repl + " replica.");
       int bufferSize = fs.getConf()
           .getInt(CommonConfigurationKeys.IO_FILE_BUFFER_SIZE_KEY, 4096);
@@ -1073,7 +1070,7 @@ public class TestFileCreation {
    */
   @Test
   public void testLeaseExpireHardLimit() throws Exception {
-    LOG.info("testLeaseExpireHardLimit start");
+    System.out.println("testLeaseExpireHardLimit start");
     final long leasePeriod = 1000;
     final int DATANODE_NUM = 3;
 
@@ -1118,20 +1115,20 @@ public class TestFileCreation {
           successcount++;
         }
       }
-      LOG.info("successcount=" + successcount);
+      System.out.println("successcount=" + successcount);
       assertTrue(successcount > 0);
     } finally {
       IOUtils.closeStream(dfs);
       cluster.shutdown();
     }
 
-    LOG.info("testLeaseExpireHardLimit successful");
+    System.out.println("testLeaseExpireHardLimit successful");
   }
 
   // test closing file system before all file handles are closed.
   @Test
   public void testFsClose() throws Exception {
-    LOG.info("test file system close start");
+    System.out.println("test file system close start");
     final int DATANODE_NUM = 3;
 
     Configuration conf = new HdfsConfiguration();
@@ -1152,7 +1149,7 @@ public class TestFileCreation {
       // close file system without closing file
       dfs.close();
     } finally {
-      LOG.info("testFsClose successful");
+      System.out.println("testFsClose successful");
       cluster.shutdown();
     }
   }
@@ -1160,7 +1157,7 @@ public class TestFileCreation {
   // test closing file after cluster is shutdown
   @Test
   public void testFsCloseAfterClusterShutdown() throws IOException {
-    LOG.info("test testFsCloseAfterClusterShutdown start");
+    System.out.println("test testFsCloseAfterClusterShutdown start");
     final int DATANODE_NUM = 3;
 
     Configuration conf = new HdfsConfiguration();
@@ -1191,13 +1188,13 @@ public class TestFileCreation {
       boolean hasException = false;
       try {
         out.close();
-        LOG.info("testFsCloseAfterClusterShutdown: Error here");
+        System.out.println("testFsCloseAfterClusterShutdown: Error here");
       } catch (IOException e) {
         hasException = true;
       }
       assertTrue("Failed to close file after cluster shutdown", hasException);
     } finally {
-      LOG.info("testFsCloseAfterClusterShutdown successful");
+      System.out.println("testFsCloseAfterClusterShutdown successful");
       if (cluster != null) {
         cluster.shutdown();
       }
@@ -1251,7 +1248,7 @@ public class TestFileCreation {
       NamenodeProtocols nnrpc = cluster.getNameNodeRpc();
 
       for (String pathStr : NON_CANONICAL_PATHS) {
-        LOG.info("Creating " + pathStr + " by " + method);
+        System.out.println("Creating " + pathStr + " by " + method);
         switch (method) {
         case DIRECT_NN_RPC:
           try {

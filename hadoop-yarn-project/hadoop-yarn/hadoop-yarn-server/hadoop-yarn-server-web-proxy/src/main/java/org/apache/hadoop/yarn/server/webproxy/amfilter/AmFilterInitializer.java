@@ -19,7 +19,7 @@
 package org.apache.hadoop.yarn.server.webproxy.amfilter;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.FilterContainer;
 import org.apache.hadoop.http.FilterInitializer;

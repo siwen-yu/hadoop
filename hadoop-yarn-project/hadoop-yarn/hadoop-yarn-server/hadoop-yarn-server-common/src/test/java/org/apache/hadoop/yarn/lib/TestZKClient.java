@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.apache.hadoop.net.ServerSocketUtil;
-import com.google.common.net.HostAndPort;
+import org.apache.hadoop.thirdparty.com.google.common.net.HostAndPort;
 import org.junit.Assert;
 
 import org.apache.hadoop.yarn.lib.ZKClient;

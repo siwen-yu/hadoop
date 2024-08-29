@@ -67,7 +67,7 @@ import org.apache.hadoop.thirdparty.com.google.common.net.InetAddresses;
 import org.apache.http.conn.util.InetAddressUtils;
 import java.net.*;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
