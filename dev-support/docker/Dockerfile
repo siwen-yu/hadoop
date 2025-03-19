@@ -52,6 +52,7 @@ RUN apt-get -q update \
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 ENV PYTHONIOENCODING=utf-8
+ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 
 ######
 # Set env vars required to build Hadoop
@@ -100,3 +101,11 @@ COPY hadoop_env_checks.sh /root/hadoop_env_checks.sh
 RUN chmod 755 /root/hadoop_env_checks.sh
 # hadolint ignore=SC2016
 RUN echo '${HOME}/hadoop_env_checks.sh' >> /root/.bashrc
+
+# 替换默认为国内镜像
+RUN sed -i '/<mirrors>/a\
+      <mirror>\n\
+          <id>huaweimaven<\/id>\n\
+          <mirrorOf>*<\/mirrorOf>\n\
+          <url>https://mirrors.huaweicloud.com/repository/maven/<\/url>\n\
+      <\/mirror>' /etc/maven/settings.xml

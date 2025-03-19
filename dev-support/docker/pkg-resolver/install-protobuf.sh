@@ -41,9 +41,13 @@ fi
 if [ "$version_to_install" == "3.21.12" ]; then
   # hadolint ignore=DL3003
   mkdir -p /opt/protobuf-src &&
+  if [ -e "pkg-resolver/package/protobuf-3.21.12.tar.gz" ]; then
+    mv pkg-resolver/package/protobuf-3.21.12.tar.gz  /opt/protobuf.tar.gz
+  else
     curl -L -s -S \
-      https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.21.12.tar.gz \
-      -o /opt/protobuf.tar.gz &&
+        https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.21.12.tar.gz \
+        -o /opt/protobuf.tar.gz
+  fi
     tar xzf /opt/protobuf.tar.gz --strip-components 1 -C /opt/protobuf-src &&
     cd /opt/protobuf-src &&
     ./autogen.sh &&
